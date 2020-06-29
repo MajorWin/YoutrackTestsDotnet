@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <LangVersion>8</LangVersion>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <RootNamespace>YouTrackApp</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugType>none</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="Resources\youtrack-5.2.5-8823.jar">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Args" Version="1.2.1" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+.idea/
+packages/
+
+YoutrackApp/bin/
+YoutrackApp/obj/
+YouTrackApp/Resources/youtrack-5.2.5-8823.jar
+
+YoutrackTests/bin/
+YoutrackTests/obj/
+
+*.DotSettings.user
