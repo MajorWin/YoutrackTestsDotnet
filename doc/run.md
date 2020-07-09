@@ -9,16 +9,13 @@
 
 Чтобы упростить себе жизнь во время разработки.
 
-Во время разработки jar-ка ютрека лежала в проекте YoutrackApp в папке Resources и при билде копировалась в директорию с исполняемым файлом. В публичный репозиторий выкладывать эту сборку ютрека я не стал.
+#### Для запуска запускатором
+* Создать директорию `<repo dir>/YoutrackApp/Resources` и положить туда `youtrack-5.2.5-8823.jar`
+* Сбилдить и запустить YoutrackApp
 
-#### Для запуска ютрека:
-* Создать директорию `YoutrackApp/Resources` и положить туда `youtrack-5.2.5-8823.jar`
-* Сбилдить YoutrackApp
-* Запустить YoutrackApp.exe
-
-ИЛИ
-
-* `YoutrackApp.exe /YoutrackJarPath <path>`
+#### Для запуска вручную
+* Перейти в директорию с youtrack-5.2.5-8823.jar
+* `java -Djetbrains.youtrack.baseUrl=http://localhost:8080 -Duser.home=.\ -jar .\youtrack-5.2.5-8823.jar 8080`
 
 #### Остановить ютрек и удалить директорию с данными ютрека
 `YoutrackApp.exe /StopCleanup /YoutrackJarPath <path>`
