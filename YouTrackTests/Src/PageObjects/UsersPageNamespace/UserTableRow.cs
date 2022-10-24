@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenQA.Selenium;
-using YouTrackWebdriverTests.Logging;
+using YouTrackWebdriverTests.PageObjects.Base;
+// using YouTrackWebdriverTests.Logging;
 using YouTrackWebdriverTests.PageObjects.PageObjectValidators;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 
 namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
 {
-    public class UserTableRow : PageObject
+    public class UserTableRow : YoutrackPageObject
     {
         private static readonly By OnlineStatusLocator = By.CssSelector(@"td:nth-child(1) span.user-status");
         private static readonly By LoginLocator = By.CssSelector(@"td:nth-child(1) a[id ^= 'id_l.U.usersList.UserLogin.editUser']");
@@ -27,81 +28,78 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
         private static readonly By MergeLinkLocator = By.CssSelector(@"td:nth-child(6) a[id ^= 'id_l.U.usersList.mergeUser']");
         private static readonly By BanLinkLocator = By.CssSelector(@"td:nth-child(6) a[id ^= 'id_l.U.usersList.banUser']");
 
-        private readonly By myRowLocator;
+        // user table is updated dynamically so we can not store IWebElements
+        private readonly By _rowLocator;
 
 
-        public UserTableRow(IWebDriver browser, IWebElement userTr) :
-            base(browser, WebElementValidators.OfATag("tr", userTr))
+        public UserTableRow(IWebDriver browser, IWebElement rowElement) :
+            base(browser, new TagValidator(rowElement, "tr"))
         {
-            var loginLinkId = userTr.FindElement(LoginLocator).GetAttribute("id");
-            myRowLocator = GetUserTrLocator(loginLinkId);
+            var loginLinkId = rowElement.FindElement(LoginLocator).GetAttribute("id");
+            _rowLocator = GetRowLocator(loginLinkId);
         }
 
         private UserTableRow(IWebDriver browser, By rowLocator) :
-            base(browser, ByValidators.ExistsAndDisplayedNow(rowLocator, browser))
+            base(browser, new WebElementExistsAndDisplayedNowValidator(browser, rowLocator))
         {
-            myRowLocator = rowLocator;
+            _rowLocator = rowLocator;
         }
 
 
-        public bool IsOnline => UserTr.FindElement(OnlineStatusLocator).GetAttribute("class").Contains("user-online");
+        public bool IsOnline => GetRowElement().FindElement(OnlineStatusLocator).GetAttribute("class").Contains("user-online");
 
-        public string Login => UserTr.FindElement(LoginLocator).Text;
-        public string LoginTitle => UserTr.FindElement(LoginLocator).GetAttribute("title");
-        public Uri LoginLink => new Uri(UserTr.FindElement(LoginLocator).GetAttribute("href"));
+        public string Login => GetRowElement().FindElement(LoginLocator).Text;
+        public string LoginTitle => GetRowElement().FindElement(LoginLocator).GetAttribute("title");
+        public Uri LoginLink => new Uri(GetRowElement().FindElement(LoginLocator).GetAttribute("href"));
 
-        public bool IsBanned => UserTr.TryFindElement(BannedLocator)?.Text == "banned";
+        public bool IsBanned => GetRowElement().TryFindElement(BannedLocator)?.Text == "banned";
 
-        public string FullName => UserTr.FindElement(FullNameLocator).Text;
-        public string FullNameTitle => UserTr.FindElement(FullNameLocator).GetAttribute("title");
+        public string FullName => GetRowElement().FindElement(FullNameLocator).Text;
+        public string FullNameTitle => GetRowElement().FindElement(FullNameLocator).GetAttribute("title");
 
-        public string Email => UserTr.FindElement(EmailLocator).Text;
-        public string EmailTitle => UserTr.FindElement(EmailLocator).GetAttribute("title");
+        public string Email => GetRowElement().FindElement(EmailLocator).Text;
+        public string EmailTitle => GetRowElement().FindElement(EmailLocator).GetAttribute("title");
 
-        public string Jabber => UserTr.FindElement(JabberLocator).Text;
-        public string JabberTitle => UserTr.FindElement(JabberLocator).GetAttribute("title");
+        public string Jabber => GetRowElement().FindElement(JabberLocator).Text;
+        public string JabberTitle => GetRowElement().FindElement(JabberLocator).GetAttribute("title");
 
-        public IEnumerable<string> Groups => UserTr.FindElements(GroupLocator).Select(a => a.Text);
+        public IEnumerable<string> Groups => GetRowElement().FindElements(GroupLocator).Select(a => a.Text);
 
-        public string LastAccess => UserTr.FindElement(LastAccessLocator).Text;
-
-
-        private IWebElement UserTr => FindElement(myRowLocator);
+        public string LastAccess => GetRowElement().FindElement(LastAccessLocator).Text;
 
 
-        [LogAspect]
+        public IWebElement GetRowElement() => Browser.FindElement(_rowLocator);
+
+        // [LogAspect]
         public static UserTableRow GetRowByLogin(string login, IWebElement userTable, IWebDriver browser)
         {
-            WebElementValidators.OfATag("table", userTable).Invoke();
-
             var loginLinkId = userTable
                 .FindElements(LoginLocator)
                 .First(a => a.Text == login)
                 .GetAttribute("id");
-            var rowLocator = GetUserTrLocator(loginLinkId);
+            var rowLocator = GetRowLocator(loginLinkId);
 
             return new UserTableRow(browser, rowLocator);
         }
 
-
-        [LogAspect]
+        // [LogAspect]
         public UserTableRow ClickDeleteUser()
         {
-            UserTr.FindElement(DeleteLinkLocator).Click();
+            GetRowElement().FindElement(DeleteLinkLocator).Click();
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserTableRow ClickMergeUser()
         {
-            UserTr.FindElement(MergeLinkLocator).Click();
+            GetRowElement().FindElement(MergeLinkLocator).Click();
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserTableRow ClickBanUser()
         {
-            var banLink = UserTr.FindElement(BanLinkLocator);
+            var banLink = GetRowElement().FindElement(BanLinkLocator);
             if (banLink.Text != "Ban")
             {
                 throw new InvalidOperationException($"Can't click ban link. User {Login} already banned");
@@ -111,10 +109,10 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserTableRow ClickUnbanUser()
         {
-            var unbanLink = UserTr.FindElement(BanLinkLocator);
+            var unbanLink = GetRowElement().FindElement(BanLinkLocator);
             if (unbanLink.Text != "Unban")
             {
                 throw new InvalidOperationException($"Can't click unban link. User {Login} already unbanned");
@@ -125,7 +123,7 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
         }
 
 
-        [LogAspect]
+        // [LogAspect]
         public UsersPage DeleteUser()
         {
             ClickDeleteUser();
@@ -140,7 +138,7 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
             return Browser.GoToUsersPage();
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserTableRow BanUser()
         {
             ClickBanUser();
@@ -150,7 +148,7 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserTableRow UnbanUser()
         {
             ClickUnbanUser();
@@ -161,6 +159,6 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
         }
 
 
-        private static By GetUserTrLocator(string loginLinkId) => By.XPath($"//a[@id = \"{loginLinkId}\"]/../..");
+        private static By GetRowLocator(string loginLinkId) => By.XPath($"//a[@id = \"{loginLinkId}\"]/../..");
     }
 }

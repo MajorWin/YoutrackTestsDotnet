@@ -1,15 +1,15 @@
 using NUnit.Framework;
 using OpenQA.Selenium;
-using YouTrackWebdriverTests.PageObjects.UsersPageNamespace;
+using YouTrackWebdriverTests.Model;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 
-namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fields
+namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormTests.Fields
 {
     public class PasswordTests : UsersCreationTestsBase
     {
         private const string OneSymbol = "1";
-        private const string CorrectPassword = "tensymbols";
-        private const string IncorrectPassword = "nottensymbols";
+        private const string CorrectPassword = "tencharacters";
+        private const string IncorrectPassword = "nottencharacters";
 
         private const string MaxLengthPassword = "123456789.123456789.123456789.123456789.123456789.";
 
@@ -18,21 +18,21 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
         private const string UnicodeString = "\uFF41\uFF45\uFF53\uFF54\uFF48\uFF45\uFF54\uFF49\uFF43\uFF53";
 
 
-        [TestCase(OneSymbol /*, TestName = "One symbol password"*/)]
-        [TestCase(CorrectPassword /*, TestName = "Some correct password"*/)]
-        [TestCase(MaxLengthPassword /*, TestName = "Maximum length password"*/)]
-        [TestCase(UnicodeString /*, TestName = "Unicode symbols in password"*/)]
+        [TestCase(OneSymbol, TestName = "One symbol password")]
+        [TestCase(CorrectPassword, TestName = "Correct password")]
+        [TestCase(MaxLengthPassword, TestName = "Maximum length password")]
+        [TestCase(UnicodeString, TestName = "Unicode characters in password")]
         public void ValidPasswordAndConfirmation(string password)
         {
             // Given
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(password: password, passwordConfirmation: password);
+            var user = UserCreator.CreateFilledUser(password: password, passwordConfirmation: password);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
-                .SubmitSuccessfully();
+                .SubmitAndOpenEditUserPage();
 
             // Then
             using var anotherSession = CreateNewSession();
@@ -42,36 +42,36 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
         [TestCase(
             "",
             "",
-            "Password is required!"
-            /*, TestName = "No password, no confirmation"*/)]
+            "Password is required!",
+            TestName = "No password, no confirmation")]
         [TestCase(
             "",
             CorrectPassword,
-            "Password doesn't match!"
-            /*, TestName = "No password"*/)]
+            "Password doesn't match!",
+            TestName = "No password")]
         [TestCase(
             CorrectPassword,
             "",
-            "Password doesn't match!"
-            /*, TestName = "No confirmation"*/)]
+            "Password doesn't match!",
+            TestName = "No confirmation")]
         [TestCase(
             CorrectPassword,
             IncorrectPassword,
-            "Password doesn't match!"
-            /*, TestName = "Password and confirmation don't match"*/)]
+            "Password doesn't match!",
+            TestName = "Password and confirmation don't match")]
         [TestCase(
             MaxLengthPassword,
             MaxLengthPassword + "evenmore",
-            "Password doesn't match!"
-            /*, TestName = "Confirmation is more than 50 characters"*/)]
+            "Password doesn't match!",
+            TestName = "Confirmation is more than 50 characters")]
         public void NegativeTests(string password, string confirmation, string expectedErrorMessage)
         {
             // Given
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(password: password, passwordConfirmation: confirmation);
+            var user = UserCreator.CreateFilledUser(password: password, passwordConfirmation: confirmation);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
                 .ClickOk();
@@ -85,27 +85,29 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
 
         [TestCase(
             TooLongPassword,
-            ""
-            /*, TestName = "Password is > 50 characters long, password confirmation is empty"*/)]
+            "",
+            TestName = "Password is > 50 characters long, password confirmation is empty")]
         [TestCase(
             TooLongPassword,
-            CorrectPassword
-            /*, TestName = "Password is > 50 characters long, password confirmation is of normal length"*/)]
+            CorrectPassword,
+            TestName = "Password is > 50 characters long, password confirmation is of normal length")]
         [TestCase(
             TooLongPassword,
-            TooLongPassword
-            /*, TestName = "Password is > 50 characters long, password confirmation too"*/)]
+            TooLongPassword,
+            TestName = "Password is > 50 characters long, password confirmation too")]
         public void TooLongPasswordReturnsError(string password, string passwordConfirmation)
         {
             // Given
-            var user = UserCreationForm.User.CreateFilledUser(
+            var user = UserCreator.CreateFilledUser(
                 password: password,
                 passwordConfirmation: passwordConfirmation);
-            var usersPage = GoToUsersPage();
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
-            userCreationForm.Fill(user).ClickOk();
+            userCreationForm
+                .Fill(user)
+                .ClickOk();
 
             // Then
             var errorMessage = userCreationForm.GetErrorBulbMessage();

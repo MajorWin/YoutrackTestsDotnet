@@ -48,10 +48,10 @@ namespace YouTrackWebdriverTests
             return (false, default);
         }
 
-        public static bool WaitIgnoringException<E>(
+        public static bool WaitIgnoringException<TE>(
             Func<bool> condition,
             int timeoutSeconds = 5,
-            int checkIntervalMillis = 100) where E : Exception
+            int checkIntervalMillis = 100) where TE : Exception
         {
             var timeout = timeoutSeconds.Seconds();
 
@@ -65,7 +65,7 @@ namespace YouTrackWebdriverTests
                         return true;
                     }
                 }
-                catch (E) { }
+                catch (TE) { }
 
                 Thread.Sleep(checkIntervalMillis);
             }

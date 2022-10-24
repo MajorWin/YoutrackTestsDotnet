@@ -1,13 +1,13 @@
 using OpenQA.Selenium;
-using YouTrackWebdriverTests.Extensions;
-using YouTrackWebdriverTests.Logging;
+using YouTrackWebdriverTests.PageObjects.Base;
+// using YouTrackWebdriverTests.Logging;
 using YouTrackWebdriverTests.PageObjects.PageObjectValidators;
 
 namespace YouTrackWebdriverTests.PageObjects
 {
-    public class YoutrackSettingsPage : PageObject
+    public class YoutrackSettingsPage : YoutrackPageObject
     {
-        public const string AbsolutePath = "/setUp";
+        public const string Path = "/setUp";
 
         private static readonly By LicenceCheckBoxLocator = By.Id("id_l.S.SetupContent.license.acceptLicenseAgreementLabel");
         private static readonly By PasswordTextBoxLocator = By.Id("id_l.S.SetupContent.rootPwd.rootPassword2");
@@ -16,19 +16,21 @@ namespace YouTrackWebdriverTests.PageObjects
 
 
         public YoutrackSettingsPage(IWebDriver browser) :
-            base(browser, UriValidators.Equals(AbsolutePath, browser)) { }
+            base(browser, new UriPathMatchesValidator(browser, Path))
+        {
+        }
 
 
         /// <summary>
         /// The only thing we need from this page in this project is to be able to login
         /// </summary>
-        [LogAspect]
+        // [LogAspect]
         public ProjectsPage InitialSetup(string rootLogin, string rootPassword)
         {
-            FindElement(LicenceCheckBoxLocator).Click();
-            FindElement(PasswordTextBoxLocator).SendKeys(rootPassword);
-            FindElement(PasswordConfirmationTextBoxLocator).SendKeys(rootPassword);
-            FindElement(SaveButtonLocator).Click();
+            Browser.FindElement(LicenceCheckBoxLocator).Click();
+            Browser.FindElement(PasswordTextBoxLocator).SendKeys(rootPassword);
+            Browser.FindElement(PasswordConfirmationTextBoxLocator).SendKeys(rootPassword);
+            Browser.FindElement(SaveButtonLocator).Click();
 
             return new ProjectsPage(Browser);
         }

@@ -1,35 +1,40 @@
-# YoutrackTests
+There are 2 projects in solution: `YouTrackApp` and `YouTrackTests`. YouTrackApp is a project to make starting and stopping youtrack easier, and YouTrackTests is a project with tests.
 
-В реальности эти тесты должны запускаться в CI, поэтому при запуске nunit-у можно передать параметры:
-* `--params=YoutrackAddress=<http://...>` - по умолчанию http://localhost:8080
-* `--params=Browser=Firefox|Chrome` - запускает тесты в выбранном браузере. по умолчанию в хроме
+# YouTrackApp
 
+## Start YouTrack
+* Install [java](https://www.java.com/ru/download/)
+* Download [youtrack-5.2.5-8823.jar](https://download.jetbrains.com/charisma/archive/youtrack-5.2.5-8823.jar)
+* Create directory `<repo dir>/YoutrackApp/Resources` and put `youtrack-5.2.5-8823.jar` there
+* Build and run YoutrackApp
+* New tab in browser should open. Wait for it to load. It should look like this: ![](youtrack-start.png)
+* Done
 
-# YoutrackApp, запускатор ютрека
+## Stop YouTrack and clean up it's data
+* Run `YoutrackApp.exe /StopCleanup` or `YoutrackApp.exe /StopCleanup /YoutrackJarPath <path>`
 
-Чтобы упростить себе жизнь во время разработки.
-
-#### Для запуска запускатором
-* Создать директорию `<repo dir>/YoutrackApp/Resources` и положить туда `youtrack-5.2.5-8823.jar`
-* Сбилдить и запустить YoutrackApp
-
-#### Для запуска вручную
-* Перейти в директорию с youtrack-5.2.5-8823.jar
-* `java -Djetbrains.youtrack.baseUrl=http://localhost:8080 -Duser.home=.\ -jar .\youtrack-5.2.5-8823.jar 8080`
-
-#### Остановить ютрек и удалить директорию с данными ютрека
-`YoutrackApp.exe /StopCleanup /YoutrackJarPath <path>`
-
-либо
-
-`YoutrackApp.exe /StopCleanup`, если ютрек лежит по адресу `.\Resources\youtrack-5.2.5-8823.jar`
-
-#### Другие параметры
+## Available arguments
 ```
-/YoutrackJarPath <path> (.\Resources\youtrack-5.2.5-8823.jar)
-/BaseUrl <url> (http://localhost)
-/Port <port> (8080)
-/HomeDirectory <dir> (.\YoutrackData)
+/YoutrackJarPath <path>
+    default = ".\Resources\youtrack-5.2.5-8823.jar"
+/BaseUrl <url>
+    default = "http://localhost"
+/Port <port>
+    default = "8080"
+/HomeDirectory <dir>
+    default = ".\YoutrackData"
 /StopCleanup
 /Help
+```
+
+
+# YoutrackTests
+After Youtrack started you could run tests. Default parameter values should be fine. 
+
+## Nunit parameters
+```
+--params=YoutrackAddress=http://<host>:<port>
+    default = http://localhost:8080
+--params==Browser=Firefox|Chrome
+    default = Chrome
 ```

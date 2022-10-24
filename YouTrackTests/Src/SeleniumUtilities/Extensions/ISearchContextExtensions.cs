@@ -26,14 +26,7 @@ namespace YouTrackWebdriverTests.SeleniumUtilities.Extensions
 
         public static bool IsElementDisplayed(this ISearchContext searchContext, By by)
         {
-            try
-            {
-                return searchContext.FindElement(by).Displayed == false;
-            }
-            catch (StaleElementReferenceException)
-            {
-                return false;
-            }
+            return searchContext.TryFindElement(by)?.Displayed == true;
         }
     }
 }

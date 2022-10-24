@@ -1,12 +1,14 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using YouTrackWebdriverTests.Logging;
+using YouTrackWebdriverTests.Model;
+using YouTrackWebdriverTests.PageObjects.Base;
+// using YouTrackWebdriverTests.Logging;
 using YouTrackWebdriverTests.PageObjects.PageObjectValidators;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 
 namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
 {
-    public class UserCreationForm : PageObject
+    public class UserCreationForm : YoutrackPageObject
     {
         public static readonly By UserCreationFormLocator = By.Id("id_l.U.cr.createUserDialog");
 
@@ -26,102 +28,102 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
         private static readonly By ErrorBulbLocator = By.CssSelector("div.error-bulb2");
         private static readonly By ErrorBulbMessageLocator = By.CssSelector("div.error-tooltip");
 
-        private readonly UsersPage myParentPage;
+        private readonly UsersPage _parentPage;
 
-        private readonly IWebElement myCreateUserForm;
+        private readonly IWebElement _userCreationFormElement;
 
 
         public UserCreationForm(IWebDriver browser, UsersPage parentPage) :
-            base(browser, ByValidators.ExistsAndDisplayed(UserCreationFormLocator, browser))
+            base(browser, new WebElementExistsAndDisplayedValidator(browser, UserCreationFormLocator))
         {
-            myParentPage = parentPage;
-            myCreateUserForm = FindElement(UserCreationFormLocator);
+            _parentPage = parentPage;
+            _userCreationFormElement = Browser.FindElement(UserCreationFormLocator);
         }
 
 
-        public string Login => myCreateUserForm.FindElement(LoginLocator).GetAttribute("value");
-        public string Password => myCreateUserForm.FindElement(PasswordLocator).GetAttribute("value");
-        public string PasswordConfirmation => myCreateUserForm.FindElement(PasswordConfirmationLocator).GetAttribute("value");
-        public bool IsPasswordChangeForced => myCreateUserForm.FindElement(ForcePasswordChangeLocator).Selected;
-        public string FullName => myCreateUserForm.FindElement(FullNameLocator).GetAttribute("value");
-        public string Email => myCreateUserForm.FindElement(EmailLocator).GetAttribute("value");
-        public string Jabber => myCreateUserForm.FindElement(JabberLocator).GetAttribute("value");
+        public string Login => _userCreationFormElement.FindElement(LoginLocator).GetAttribute("value");
+        public string Password => _userCreationFormElement.FindElement(PasswordLocator).GetAttribute("value");
+        public string PasswordConfirmation => _userCreationFormElement.FindElement(PasswordConfirmationLocator).GetAttribute("value");
+        public bool IsPasswordChangeForced => _userCreationFormElement.FindElement(ForcePasswordChangeLocator).Selected;
+        public string FullName => _userCreationFormElement.FindElement(FullNameLocator).GetAttribute("value");
+        public string Email => _userCreationFormElement.FindElement(EmailLocator).GetAttribute("value");
+        public string Jabber => _userCreationFormElement.FindElement(JabberLocator).GetAttribute("value");
 
-        public bool Displayed => myCreateUserForm.Displayed;
+        public bool Displayed => _userCreationFormElement.Displayed;
 
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm TypeLogin(string login)
         {
-            myCreateUserForm.FindElement(LoginLocator).SendKeys(login);
+            _userCreationFormElement.FindElement(LoginLocator).SendKeys(login);
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm TypePassword(string password)
         {
-            myCreateUserForm.FindElement(PasswordLocator).SendKeys(password);
+            _userCreationFormElement.FindElement(PasswordLocator).SendKeys(password);
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm TypePasswordConfirmation(string passwordConfirmation)
         {
-            myCreateUserForm.FindElement(PasswordConfirmationLocator).SendKeys(passwordConfirmation);
+            _userCreationFormElement.FindElement(PasswordConfirmationLocator).SendKeys(passwordConfirmation);
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm ClickForcePasswordChange()
         {
-            myCreateUserForm.FindElement(ForcePasswordChangeLocator).Click();
+            _userCreationFormElement.FindElement(ForcePasswordChangeLocator).Click();
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm TypeFullName(string fullName)
         {
-            myCreateUserForm.FindElement(FullNameLocator).SendKeys(fullName);
+            _userCreationFormElement.FindElement(FullNameLocator).SendKeys(fullName);
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm TypeEmail(string email)
         {
-            myCreateUserForm.FindElement(EmailLocator).SendKeys(email);
+            _userCreationFormElement.FindElement(EmailLocator).SendKeys(email);
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm TypeJabber(string jabber)
         {
-            myCreateUserForm.FindElement(JabberLocator).SendKeys(jabber);
+            _userCreationFormElement.FindElement(JabberLocator).SendKeys(jabber);
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm ClickOk()
         {
-            myCreateUserForm.FindElement(OkButtonLocator).Click();
+            _userCreationFormElement.FindElement(OkButtonLocator).Click();
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm ClickCancel()
         {
-            myCreateUserForm.FindElement(CancelButtonLocator).Click();
+            _userCreationFormElement.FindElement(CancelButtonLocator).Click();
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm ClickClose()
         {
-            myCreateUserForm.FindElement(CloseButtonLocator).Click();
+            _userCreationFormElement.FindElement(CloseButtonLocator).Click();
             return this;
         }
 
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm Fill(User user)
         {
             TypeLogin(user.Login);
@@ -134,10 +136,10 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
             return this;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserCreationForm SetForcedPasswordChange(bool isForced)
         {
-            var forcePasswordChangeCheckbox = myCreateUserForm.FindElement(ForcePasswordChangeLocator);
+            var forcePasswordChangeCheckbox = _userCreationFormElement.FindElement(ForcePasswordChangeLocator);
             if (forcePasswordChangeCheckbox.Selected != isForced)
             {
                 forcePasswordChangeCheckbox.Click();
@@ -146,91 +148,43 @@ namespace YouTrackWebdriverTests.PageObjects.UsersPageNamespace
             return this;
         }
 
-        [LogAspect]
-        public EditUserPage SubmitSuccessfully()
+        // [LogAspect]
+        public EditUserPage SubmitAndOpenEditUserPage()
         {
             ClickOk();
             return new EditUserPage(Browser);
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UsersPage Cancel()
         {
             ClickCancel();
-            WaitHelpers.Wait(() => !Browser.IsElementDisplayed(UserCreationFormLocator));
+            WaitHelpers.Wait(() => !_userCreationFormElement.IsElementDisplayed(UserCreationFormLocator));
 
-            return myParentPage;
+            return _parentPage;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UsersPage Close()
         {
             ClickClose();
-            WaitHelpers.Wait(() => !Browser.IsElementDisplayed(UserCreationFormLocator));
+            WaitHelpers.Wait(() => !_userCreationFormElement.IsElementDisplayed(UserCreationFormLocator));
 
-            return myParentPage;
+            return _parentPage;
         }
 
-        [LogAspect]
+        // [LogAspect]
         public string GetErrorBulbMessage()
         {
-            var errorBulb = FindElementWithWait(ErrorBulbLocator);
+            var errorBulb = _userCreationFormElement.FindElementWithWait(ErrorBulbLocator);
             new Actions(Browser)
                 .MoveToElement(errorBulb)
                 .MoveByOffset(1, 1)
                 .MoveByOffset(-1, -1)
                 .Perform(); // move cursor to error bulb
-            try
-            {
-                return FindElementWithWait(ErrorBulbMessageLocator).Text;
-            }
-            catch (NoSuchElementException e)
-            {
-                throw e;
-            }
-        }
 
-        public class User
-        {
-            private static int myCounter = 0;
-
-            public string Login { get; set; } = "";
-            public string Password { get; set; } = "";
-            public string PasswordConfirmation { get; set; } = "";
-            public bool IsPasswordChangeForced { get; set; } = false;
-            public string FullName { get; set; } = "";
-            public string Email { get; set; } = "";
-            public string Jabber { get; set; } = "";
-
-            public static User CreateFilledUser(
-                string login = null,
-                string password = null,
-                string passwordConfirmation = null,
-                bool isPasswordChangeForced = false,
-                string fullName = null,
-                string email = null,
-                string jabber = null)
-            {
-                myCounter++;
-
-                login ??= $"user{myCounter}";
-                password ??= $"password{myCounter}";
-                passwordConfirmation ??= $"password{myCounter}";
-                fullName ??= $"full name {myCounter}";
-                email ??= $"e{myCounter}@mail.com";
-                jabber ??= $"j{myCounter}@abber.com";
-
-                return new User
-                {
-                    Login = login,
-                    Password = password,
-                    PasswordConfirmation = passwordConfirmation,
-                    IsPasswordChangeForced = isPasswordChangeForced,
-                    FullName = fullName,
-                    Email = email,
-                    Jabber = jabber
-                };
-            }
+            // Error bulb message is not part of user creation form
+            return Browser.FindElementWithWait(ErrorBulbMessageLocator).Text;
         }
     }
 }

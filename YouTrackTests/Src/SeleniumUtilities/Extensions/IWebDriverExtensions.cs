@@ -11,13 +11,13 @@ namespace YouTrackWebdriverTests.SeleniumUtilities.Extensions
 
         public static UsersPage GoToUsersPage(this IWebDriver driver)
         {
-            driver.Navigate().GoToUrl(TestEnvironment.GetFullAddress(UsersPage.AbsolutePath));
+            driver.Navigate().GoToUrl(TestEnvironment.GetFullAddress(UsersPage.Path));
             return new UsersPage(driver);
         }
 
         public static LoginPage GoToLoginPage(this IWebDriver driver)
         {
-            driver.Navigate().GoToUrl(TestEnvironment.GetFullAddress(LoginPage.AbsolutePath));
+            driver.Navigate().GoToUrl(TestEnvironment.GetFullAddress(LoginPage.Path));
             return new LoginPage(driver);
         }
     }

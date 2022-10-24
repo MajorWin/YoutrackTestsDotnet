@@ -1,10 +1,9 @@
 using NUnit.Framework;
-using YouTrackWebdriverTests.Extensions;
+using YouTrackWebdriverTests.Model;
 using YouTrackWebdriverTests.PageObjects;
-using YouTrackWebdriverTests.PageObjects.UsersPageNamespace;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 
-namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fields
+namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormTests.Fields
 {
     public class ForcePasswordChangeTests : UsersCreationTestsBase
     {
@@ -12,14 +11,14 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
         public void ForcePasswordChange()
         {
             // Given
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(isPasswordChangeForced: true);
+            var user = UserCreator.CreateFilledUser(isPasswordChangeForced: true);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
-                .SubmitSuccessfully();
+                .SubmitAndOpenEditUserPage();
 
             using var anotherSession = CreateNewSession();
             UserPage userPage = null;
@@ -31,7 +30,7 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
                         .GoToLoginPage()
                         .LoginByForcedToChangePasswordUserSuccessfully(user.Login, user.Password)
             );
-            Assert.True(userPage.IsChangePasswordFormDisplayed());
+            Assert.DoesNotThrow(() => userPage.WaitForChangePasswordForm());
         }
     }
 }

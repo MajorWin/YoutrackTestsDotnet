@@ -1,7 +1,7 @@
 using System.Linq;
 using NUnit.Framework;
 using OpenQA.Selenium;
-using YouTrackWebdriverTests.PageObjects.UsersPageNamespace;
+using YouTrackWebdriverTests.Model;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 using YouTrackWebdriverTests.Validation;
 
@@ -10,30 +10,28 @@ namespace YouTrackWebdriverTests.Tests.UserCreation
 {
     public class LicenceRestrictionsTests : UsersCreationTestsBase
     {
-        private const int ActiveUsersAllowed = 10;
-
         [Test]
-        public void CreateUserLinkDissappearsAsUserLimitReached()
+        public void CreateUserLinkDisappearsAsUserLimitReached()
         {
             // When
-            CreateMaximumActiveUsers();
+            YoutrackHelper.CreateMaximumActiveUsers();
 
             // Then
             Assert.Throws<NoSuchElementException>(() => GoToUsersPage().ClickCreateUser());
         }
 
         [Test]
-        public void CantCreateUserFromPageOpenedBeforeUserLimitReaches()
+        public void CantOpenUserCreationFormFromPageOpenedBeforeUserLimitReached()
         {
             // Given
             using var anotherSession = CreateNewSession();
             anotherSession.GoToLoginPage()
-                .LoginSuccessfully(TestEnvironment.RootLogin, TestEnvironment.Password);
+                .LoginSuccessfully(Configuration.Login, Configuration.Password);
 
             var usersPageFromAnotherSession = anotherSession.GoToUsersPage();
 
             // When
-            CreateMaximumActiveUsers();
+            YoutrackHelper.CreateMaximumActiveUsers();
 
             usersPageFromAnotherSession.ClickCreateUser();
 
@@ -43,19 +41,19 @@ namespace YouTrackWebdriverTests.Tests.UserCreation
         }
 
         [Test]
-        public void CantCreateUserFromTheFormOpenedBeforeUserLimitReaches()
+        public void CantCreateUserFromTheFormOpenedBeforeUserLimitReached()
         {
             // Given
             using var anotherSession = CreateNewSession();
             anotherSession.GoToLoginPage()
-                .LoginSuccessfully(TestEnvironment.RootLogin, TestEnvironment.Password);
+                .LoginSuccessfully(Configuration.Login, Configuration.Password);
 
             var userCreationFormFromAnotherSession = anotherSession.GoToUsersPage()
                 .OpenUserCreationForm()
-                .Fill(UserCreationForm.User.CreateFilledUser());
+                .Fill(UserCreator.CreateFilledUser());
 
             // When
-            CreateMaximumActiveUsers();
+            YoutrackHelper.CreateMaximumActiveUsers();
 
             userCreationFormFromAnotherSession.ClickOk();
 
@@ -72,81 +70,56 @@ namespace YouTrackWebdriverTests.Tests.UserCreation
         public void CanCreateNewUserAfterFreeingUserSlotByDeletingOne()
         {
             // Given
-            var user = UserCreationForm.User.CreateFilledUser();
-            var user2 = UserCreationForm.User.CreateFilledUser();
+            var userToDelete = UserCreator.CreateFilledUser();
+            var userToCreate = UserCreator.CreateFilledUser();
 
-            // When
             GoToUsersPage()
                 .OpenUserCreationForm()
-                .Fill(user)
-                .SubmitSuccessfully();
+                .Fill(userToDelete)
+                .SubmitAndOpenEditUserPage();
 
-            CreateMaximumActiveUsers();
+            // When
+            YoutrackHelper.CreateMaximumActiveUsers();
 
             GoToUsersPage()
                 .UserTable
-                .FindRowByLogin(user.Login)
+                .FindRowByLogin(userToDelete.Login)
                 .DeleteUser();
 
             // Then
             Assert.DoesNotThrow(
                 () => GoToUsersPage()
                     .OpenUserCreationForm()
-                    .Fill(user2)
-                    .SubmitSuccessfully());
+                    .Fill(userToCreate)
+                    .SubmitAndOpenEditUserPage());
         }
 
         [Test]
         public void CanCreateNewUserAfterFreeingUserSlotByBanningOne()
         {
             // Given
-            var user = UserCreationForm.User.CreateFilledUser();
-            var user2 = UserCreationForm.User.CreateFilledUser();
+            var userToBan = UserCreator.CreateFilledUser();
+            var userToCreate = UserCreator.CreateFilledUser();
 
-            // When
             GoToUsersPage()
                 .OpenUserCreationForm()
-                .Fill(user)
-                .SubmitSuccessfully();
+                .Fill(userToBan)
+                .SubmitAndOpenEditUserPage();
 
-            CreateMaximumActiveUsers();
+            // When
+            YoutrackHelper.CreateMaximumActiveUsers();
 
             GoToUsersPage()
                 .UserTable
-                .FindRowByLogin(user.Login)
+                .FindRowByLogin(userToBan.Login)
                 .BanUser();
 
             // Then
             Assert.DoesNotThrow(
                 () => GoToUsersPage()
                     .OpenUserCreationForm()
-                    .Fill(user2)
-                    .SubmitSuccessfully());
-        }
-
-
-        private static int CountActiveUsers()
-        {
-            var userRows = GoToUsersPage()
-                .UserTable
-                .UserRows
-                .ToList();
-            return userRows.Count - userRows.Count(userRow => userRow.IsBanned);
-        }
-
-        private static void CreateMaximumActiveUsers()
-        {
-            var userSlotsRemaining = ActiveUsersAllowed - CountActiveUsers();
-
-            for (var i = 0; i < userSlotsRemaining; i++)
-            {
-                var user = UserCreationForm.User.CreateFilledUser();
-
-                GoToUsersPage()
-                    .OpenUserCreationForm()
-                    .Fill(user)
-                    .SubmitSuccessfully();
-            }
+                    .Fill(userToCreate)
+                    .SubmitAndOpenEditUserPage());
         }
     }
 }

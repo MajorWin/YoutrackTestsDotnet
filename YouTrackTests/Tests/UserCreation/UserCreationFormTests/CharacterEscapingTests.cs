@@ -1,12 +1,11 @@
 using System.Linq;
 using NUnit.Framework;
 using OpenQA.Selenium;
-using YouTrackWebdriverTests.Extensions;
-using YouTrackWebdriverTests.PageObjects.UsersPageNamespace;
+using YouTrackWebdriverTests.Model;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 using YouTrackWebdriverTests.Validation;
 
-namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fields
+namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormTests
 {
     public class CharacterEscapingTests : UsersCreationTestsBase
     {
@@ -14,21 +13,21 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
         private const string UrlSpecialCharactersEncoded = "%3F%23%25";
 
         [Test]
-        public void UrlSpecialCharacteresAreEncoded()
+        public void UrlSpecialCharactersAreEncoded()
         {
             // Given
             const string login = UrlSpecialCharacters;
             const string expectedLoginFromUri = UrlSpecialCharactersEncoded;
 
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(login: login);
+            var user = UserCreator.CreateFilledUser(login: login);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
-            userCreationForm.Fill(user);
-            var editUserPage = userCreationForm.SubmitSuccessfully();
-
-            var urlEncodedLogin = editUserPage.LoginFromUri;
+            var urlEncodedLogin = userCreationForm
+                .Fill(user)
+                .SubmitAndOpenEditUserPage()
+                .GetUrlEncodedLoginFromUri();
 
             // Then
             Assert.AreEqual(expectedLoginFromUri, urlEncodedLogin);
@@ -39,24 +38,24 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
 
         [TestCase(
             "some<login",
-            "login shouldn't contain characters \"<\", \"/\", \">\": login"
-            /*, TestName = "'<' in login"*/)]
+            "login shouldn't contain characters \"<\", \"/\", \">\": login",
+            TestName = "'<' in login")]
         [TestCase(
             "some/login",
-            "login shouldn't contain characters \"<\", \"/\", \">\": login"
-            /*, TestName = "'/' in login"*/)]
+            "login shouldn't contain characters \"<\", \"/\", \">\": login",
+            TestName = "'/' in login")]
         [TestCase(
             "some>login",
-            "login shouldn't contain characters \"<\", \"/\", \">\": login"
-            /*, TestName = "'>' in login"*/)]
+            "login shouldn't contain characters \"<\", \"/\", \">\": login",
+            TestName = "'>' in login")]
         public void HtmlTagsInLogin(string login, string message)
         {
             // Given
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(login: login);
+            var user = UserCreator.CreateFilledUser(login: login);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
                 .ClickOk();
@@ -74,19 +73,21 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
             // Given
             const string tagString = "\"'></body>";
 
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(
+            var user = UserCreator.CreateFilledUser(
                 fullName: tagString,
                 email: tagString,
                 jabber: tagString);
 
-            // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
-            userCreationForm.Fill(user);
-            userCreationForm.SubmitSuccessfully();
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
-            usersPage = GoToUsersPage();
-            var userRow = usersPage.UserTable.FindRowByLogin(user.Login);
+            // When
+            userCreationForm
+                .Fill(user)
+                .SubmitAndOpenEditUserPage();
+
+            var userRow = GoToUsersPage()
+                .UserTable
+                .FindRowByLogin(user.Login);
 
             // Then
             Assert.AreEqual(tagString, userRow.FullName);
@@ -106,8 +107,7 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
             // Given
             const string specialCharacterString = "\"'&quot;&#39;&gt;&lt;&amp;";
 
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(
+            var user = UserCreator.CreateFilledUser(
                 login: specialCharacterString,
                 password: specialCharacterString,
                 passwordConfirmation: specialCharacterString,
@@ -115,13 +115,16 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
                 email: specialCharacterString,
                 jabber: specialCharacterString);
 
-            // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
-            userCreationForm.Fill(user);
-            userCreationForm.SubmitSuccessfully();
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
-            usersPage = GoToUsersPage();
-            var userRow = usersPage.UserTable.FindRowByLogin(user.Login);
+            // When
+            userCreationForm
+                .Fill(user)
+                .SubmitAndOpenEditUserPage();
+
+            var userRow = GoToUsersPage()
+                .UserTable
+                .FindRowByLogin(user.Login);
 
             // Then
             Assert.AreEqual(specialCharacterString, userRow.Login);
@@ -143,16 +146,18 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
             // Given
             const string specialCharacterString = "\"'&quot;&#39;&gt;&lt;&amp;";
 
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(login: specialCharacterString, fullName: "");
+            var user = UserCreator.CreateFilledUser(login: specialCharacterString, fullName: "");
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
-            userCreationForm.Fill(user);
-            userCreationForm.SubmitSuccessfully();
+            userCreationForm
+                .Fill(user)
+                .SubmitAndOpenEditUserPage();
 
-            usersPage = GoToUsersPage();
-            var userRow = usersPage.UserTable.FindRowByLogin(user.Login);
+            var userRow = GoToUsersPage()
+                .UserTable
+                .FindRowByLogin(user.Login);
 
             // Then
             Assert.AreEqual(specialCharacterString, userRow.FullName);

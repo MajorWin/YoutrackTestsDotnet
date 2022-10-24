@@ -1,16 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using NUnit.Framework;
 using OpenQA.Selenium;
-using YouTrackWebdriverTests.Extensions;
-using YouTrackWebdriverTests.PageObjects.UsersPageNamespace;
+using YouTrackWebdriverTests.Model;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 using YouTrackWebdriverTests.Validation;
 
-namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fields
+namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormTests.Fields
 {
-    public class LoginWithEmptyFullNameTests : UsersCreationTestsBase
+    public class LoginTests : UsersCreationTestsBase
     {
         private const string OneSymbol = "1";
         private const string TenSymbols = "tensymbols";
@@ -33,53 +31,53 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
             .Select(whitespace => $"login{whitespace}withwhitespace");
 
 
-        //TODO: RIDER-44093: Rider can't handle TestName argument
         [TestCase(
             OneSymbol,
             OneSymbol,
-            OneSymbol
-            /*, TestName = "One symbol"*/)]
+            OneSymbol,
+            TestName = "One symbol")]
         [TestCase(
             TenSymbols,
             TenSymbols,
-            TenSymbols
-            /*, TestName = "Ten symbols"*/)]
+            TenSymbols,
+            TestName = "Ten symbols")]
         [TestCase(
             MaxLengthLogin,
             MaxLengthLogin,
-            MaxLengthLogin
-            /*, TestName = "Max length"*/)]
+            MaxLengthLogin,
+            TestName = "Max length")]
         [TestCase(
             SpecialCharacters,
             SpecialCharacters,
-            SpecialCharacters
-            /*, TestName = "Special symbols"*/)]
+            SpecialCharacters,
+            TestName = "Special characters")]
         [TestCase(
             StringWithPlus,
             StringWithSpace,
-            StringWithPlus
-            /*, TestName = "Plus symbol is not url encoded"*/)]
+            StringWithPlus,
+            TestName = "Plus symbol is not url encoded")]
         [TestCase(
             UnicodeString,
             UnicodeString,
-            UnicodeString
-            /*, TestName = "Unicode symbols in login"*/)]
-        public void ValidLoginEmptyFullName(string login, string expectedLoginFromEditUserPageUri, string expectedLoginFromUserTable)
+            UnicodeString,
+            TestName = "Unicode characters in login")]
+        public void ValidLoginEmptyFullName(string login, string expectedLoginFromEditUserPageUri,
+            string expectedLoginFromUserTable)
         {
             // Given
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(login: login, fullName: "");
+            var user = UserCreator.CreateFilledUser(login: login, fullName: "");
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
-            userCreationForm.Fill(user);
-            var editUserPage = userCreationForm.SubmitSuccessfully();
+            var editUserPage = GoToUsersPage()
+                .OpenUserCreationForm()
+                .Fill(user)
+                .SubmitAndOpenEditUserPage();
+            var editUserPageUri = editUserPage.GetUri();
+            var loginFromUri = editUserPage.GetLoginFromUri();
 
-            var editUserPageUri = editUserPage.Uri;
-            var loginFromUri = HttpUtility.UrlDecode(editUserPage.LoginFromUri);
-
-            usersPage = GoToUsersPage();
-            var userRow = usersPage.UserTable.FindRowByLogin(expectedLoginFromUserTable);
+            var userRow = GoToUsersPage()
+                .UserTable
+                .FindRowByLogin(expectedLoginFromUserTable);
 
             // Then
             Assert.AreEqual(expectedLoginFromEditUserPageUri, loginFromUri);
@@ -97,31 +95,30 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
         }
 
         [Test]
-        public void TooLongLoginWillBeCutToMaxSize()
+        public void FormDoesntAllowToTypeTooLongLogin()
         {
             // Given
             const string login = MaxLengthLogin + ">";
 
-            var usersPage = GoToUsersPage();
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm.TypeLogin(login);
 
             // Then
             Assert.AreEqual(MaxLengthLogin, userCreationForm.Login);
         }
 
-        [TestCase("", "Login is required!" /*, TestName = "Empty login"*/)]
-        [TestCase("      ", "Login is required!" /*, TestName = "Login consists of spaces"*/)]
+        [TestCase("", "Login is required!", TestName = "Empty login")]
+        [TestCase("      ", "Login is required!", TestName = "Login consists of spaces")]
         public void ErrorBulbErrors(string login, string message)
         {
             // Given
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(login: login);
+            var user = UserCreator.CreateFilledUser(login: login);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
                 .ClickOk();
@@ -135,32 +132,32 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
 
         [TestCase(
             " a",
-            "Restricted character ' ' in the name"
-            /*, TestName = "Space at the start of login"*/)]
+            "Restricted character ' ' in the name",
+            TestName = "Space at the start of login")]
         [TestCase(
             "a ",
-            "Restricted character ' ' in the name"
-            /*, TestName = "Space at the end of login"*/)]
+            "Restricted character ' ' in the name",
+            TestName = "Space at the end of login")]
         [TestCase(
             "a a",
-            "Restricted character ' ' in the name"
-            /*, TestName = "Space in the middle of login"*/)]
+            "Restricted character ' ' in the name",
+            TestName = "Space in the middle of login")]
         [TestCase(
             ".",
-            "Can't use \"..\", \".\" for login: login"
-            /*, TestName = "Login is '.'"*/)]
+            "Can't use \"..\", \".\" for login: login",
+            TestName = "Login is '.'")]
         [TestCase(
             "..",
-            "Can't use \"..\", \".\" for login: login"
-            /*, TestName = "Login is '..'"*/)]
+            "Can't use \"..\", \".\" for login: login",
+            TestName = "Login is '..'")]
         public void ErrorPopupErrors(string login, string message)
         {
             // Given
-            var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(login: login);
+            var user = UserCreator.CreateFilledUser(login: login);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
                 .ClickOk();
@@ -172,20 +169,20 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
             Assert.Throws<NoSuchElementException>(() => userCreationForm.GetErrorBulbMessage());
         }
 
-        [TestCase("user1", "user1" /*, TestName = "Same logins"*/)]
-        [TestCase("user1", "USER1" /*, TestName = "First login is lowercased, second is uppercased"*/)]
-        [TestCase("USER1", "user1" /*, TestName = "First login is uppercased, second is lowercased"*/)]
+        [TestCase("user1", "user1", TestName = "Same logins")]
+        [TestCase("user1", "USER1", TestName = "First login is lowercased, second is uppercased")]
+        [TestCase("USER1", "user1", TestName = "First login is uppercased, second is lowercased")]
         public void NotAllowedToCreateUserWithNonUniqueLogin(string login1, string login2)
         {
             // Given
-            var user1 = UserCreationForm.User.CreateFilledUser(login: login1);
-            var user2 = UserCreationForm.User.CreateFilledUser(login: login2);
+            var user1 = UserCreator.CreateFilledUser(login: login1);
+            var user2 = UserCreator.CreateFilledUser(login: login2);
 
             // When
             GoToUsersPage()
                 .OpenUserCreationForm()
                 .Fill(user1)
-                .SubmitSuccessfully();
+                .SubmitAndOpenEditUserPage();
 
             var userCreationForm = GoToUsersPage().OpenUserCreationForm();
             userCreationForm
@@ -204,14 +201,14 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
         public void NotAllowedToCreateUserWithRootAndGuestNames(string login)
         {
             // Given
-            var user = UserCreationForm.User.CreateFilledUser(login: login);
+            var user = UserCreator.CreateFilledUser(login: login);
+
+            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
 
             // When
-            var userCreationForm = GoToUsersPage().OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
                 .ClickOk();
-
 
             // Then
             var errorPopup = userCreationForm.GetErrorPopup();
@@ -227,14 +224,14 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
             const string login1 = "login_with_english_e";
             const string login2 = "login_with_russian_е";
 
-            var user1 = UserCreationForm.User.CreateFilledUser(login: login1);
-            var user2 = UserCreationForm.User.CreateFilledUser(login: login2);
+            var user1 = UserCreator.CreateFilledUser(login: login1);
+            var user2 = UserCreator.CreateFilledUser(login: login2);
 
             // When
             GoToUsersPage()
                 .OpenUserCreationForm()
                 .Fill(user1)
-                .SubmitSuccessfully();
+                .SubmitAndOpenEditUserPage();
 
             var userCreationForm = GoToUsersPage().OpenUserCreationForm();
             userCreationForm
@@ -251,16 +248,17 @@ namespace YouTrackWebdriverTests.Tests.UserCreation.UserCreationFormNamespace.Fi
 
         [TestCaseSource(nameof(SomeUnicodeWhitespaces))]
         [TestCaseSource(nameof(StringsWithUnicodeWhitespaces))]
-        // TODO: IWebElement.Text returns string without zero-width space and it breaks my test flow, so for now next test is commented out
-        // [TestCase("root" + ZeroWidthSpace/*, TestName = "'root' with zerowidth whitespace at the end"*/)]
+        // Can not delete user after next test, because WebDriver returns it's name as "root" and not "root<invis char>"
+        // [TestCase("root" + ZeroWidthSpace, TestName = "'root' with zerowidth whitespace at the end")]
         public void WhitespacesNotAllowedInLogin(string login)
         {
             // Given
             var usersPage = GoToUsersPage();
-            var user = UserCreationForm.User.CreateFilledUser(login: login);
+            var user = UserCreator.CreateFilledUser(login: login);
+
+            var userCreationForm = usersPage.OpenUserCreationForm();
 
             // When
-            var userCreationForm = usersPage.OpenUserCreationForm();
             userCreationForm
                 .Fill(user)
                 .ClickOk();

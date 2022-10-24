@@ -1,6 +1,6 @@
 using OpenQA.Selenium;
 using YouTrackWebdriverTests.Exceptions;
-using YouTrackWebdriverTests.Extensions;
+using YouTrackWebdriverTests.Model;
 using YouTrackWebdriverTests.PageObjects;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 
@@ -16,17 +16,35 @@ namespace YouTrackWebdriverTests
 
             switch (actualUri.AbsolutePath)
             {
-                case YoutrackSettingsPage.AbsolutePath:
+                case YoutrackSettingsPage.Path:
                     var settings = new YoutrackSettingsPage(browser);
-                    settings.InitialSetup(TestEnvironment.RootLogin, TestEnvironment.Password);
+                    settings.InitialSetup(Configuration.Login, Configuration.Password);
                     break;
-                case LoginPage.AbsolutePath:
-                    new LoginPage(browser).LoginSuccessfully(TestEnvironment.RootLogin, TestEnvironment.Password);
+                case LoginPage.Path:
+                    new LoginPage(browser).LoginSuccessfully(Configuration.Login, Configuration.Password);
                     break;
                 default:
                     throw new WrongUrlException(
-                        $"{actualUri.Authority}{YoutrackSettingsPage.AbsolutePath} or {actualUri.Authority}{LoginPage.AbsolutePath}",
+                        $"{actualUri.Authority}{YoutrackSettingsPage.Path} or {actualUri.Authority}{LoginPage.Path}",
                         $"{actualUri.Authority}{actualUri.AbsolutePath}");
+            }
+        }
+
+        // [LogAspect]
+        public static void CreateMaximumActiveUsers()
+        {
+            var usersPage = TestEnvironment.Browser.GoToUsersPage();
+            var userSlotsRemaining = Configuration.ActiveUsersAllowed - usersPage.CountActiveUsers();
+
+            for (var i = 0; i < userSlotsRemaining; i++)
+            {
+                var user = UserCreator.CreateFilledUser();
+
+                usersPage
+                    .OpenUserCreationForm()
+                    .Fill(user)
+                    .SubmitAndOpenEditUserPage();
+                usersPage = TestEnvironment.Browser.GoToUsersPage();
             }
         }
     }

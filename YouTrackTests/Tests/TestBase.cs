@@ -4,6 +4,6 @@ namespace YouTrackWebdriverTests.Tests
 {
     public class TestBase
     {
-        protected static IWebDriver CreateNewSession() => TestEnvironment.WebDriverInstantiator.CreateWebDriver();
+        protected static IWebDriver CreateNewSession() => TestEnvironment.WebDriverCreator.CreateWebDriver();
     }
 }

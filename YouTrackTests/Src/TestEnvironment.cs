@@ -7,27 +7,23 @@ namespace YouTrackWebdriverTests
 {
     public static class TestEnvironment
     {
-        public const string RootLogin = "root";
-        public const string Password = "password";
-
-        public static readonly string YoutrackAddress;
-        public static readonly WebDriverInstantiator WebDriverInstantiator;
+        public static readonly Uri YoutrackAddress;
+        public static readonly WebDriverCreator WebDriverCreator;
         public static readonly IWebDriver Browser;
 
-        private const string DefaultYoutrackAddress = "http://localhost:8080";
 
-        
         static TestEnvironment()
         {
-            YoutrackAddress = TestContext.Parameters.Get("YoutrackAddress", DefaultYoutrackAddress);
+            var uriString = TestContext.Parameters.Get("YoutrackAddress", Configuration.YoutrackAddress);
+            YoutrackAddress = new Uri(uriString);
 
             var browserTypeString = TestContext.Parameters.Get("Browser", BrowserType.Chrome.ToString());
             var browserType = Enum.Parse<BrowserType>(browserTypeString, true);
 
-            WebDriverInstantiator = new WebDriverInstantiator(browserType);
-            Browser = WebDriverInstantiator.CreateWebDriver();
+            WebDriverCreator = new WebDriverCreator(browserType);
+            Browser = WebDriverCreator.CreateWebDriver();
         }
 
-        public static string GetFullAddress(string absolutePath) => YoutrackAddress + absolutePath;
+        public static Uri GetFullAddress(string path) => new(YoutrackAddress, path);
     }
 }

@@ -1,37 +1,41 @@
 using OpenQA.Selenium;
-using YouTrackWebdriverTests.Logging;
+using YouTrackWebdriverTests.PageObjects.Base;
+// using YouTrackWebdriverTests.Logging;
 using YouTrackWebdriverTests.PageObjects.PageObjectValidators;
 
 namespace YouTrackWebdriverTests.PageObjects
 {
-    public class LoginPage : PageObject
+    public class LoginPage : YoutrackPageObject
     {
-        public const string AbsolutePath = "/login";
+        public const string Path = "/login";
 
         private static readonly By LoginLocator = By.Id("id_l.L.login");
         private static readonly By PasswordLocator = By.Id("id_l.L.password");
         private static readonly By LoginButtonLocator = By.Id("id_l.L.loginButton");
 
 
-        public LoginPage(IWebDriver browser) : base(browser, UriValidators.Equals(AbsolutePath, browser)) { }
+        public LoginPage(IWebDriver browser) :
+            base(browser, new UriPathMatchesValidator(browser, Path))
+        {
+        }
 
 
-        [LogAspect]
+        // [LogAspect]
         public DashboardPage LoginSuccessfully(string login, string password)
         {
-            FindElement(LoginLocator).SendKeys(login);
-            FindElement(PasswordLocator).SendKeys(password);
-            FindElement(LoginButtonLocator).Click();
+            Browser.FindElement(LoginLocator).SendKeys(login);
+            Browser.FindElement(PasswordLocator).SendKeys(password);
+            Browser.FindElement(LoginButtonLocator).Click();
 
             return new DashboardPage(Browser);
         }
 
-        [LogAspect]
+        // [LogAspect]
         public UserPage LoginByForcedToChangePasswordUserSuccessfully(string login, string password)
         {
-            FindElement(LoginLocator).SendKeys(login);
-            FindElement(PasswordLocator).SendKeys(password);
-            FindElement(LoginButtonLocator).Click();
+            Browser.FindElement(LoginLocator).SendKeys(login);
+            Browser.FindElement(PasswordLocator).SendKeys(password);
+            Browser.FindElement(LoginButtonLocator).Click();
 
             return new UserPage(Browser);
         }

@@ -1,6 +1,5 @@
 using NUnit.Framework;
-using YouTrackWebdriverTests.Extensions;
-using YouTrackWebdriverTests.Logging;
+// using YouTrackWebdriverTests.Logging;
 using YouTrackWebdriverTests.PageObjects.UsersPageNamespace;
 using YouTrackWebdriverTests.SeleniumUtilities.Extensions;
 
@@ -9,14 +8,14 @@ namespace YouTrackWebdriverTests.Tests.UserCreation
     public abstract class UsersCreationTestsBase : TestBase
     {
         [SetUp]
-        [LogAspect]
+        // [LogAspect]
         public void Setup() { }
 
         [TearDown]
-        [LogAspect]
+        // [LogAspect]
         public void Teardown()
         {
-            GoToUsersPage().UserTable.RemoveAllUsersExceptRootAndGuest();
+            GoToUsersPage().RemoveAllUsersExceptRootAndGuest();
         }
 
         protected static UsersPage GoToUsersPage() => TestEnvironment.Browser.GoToUsersPage();

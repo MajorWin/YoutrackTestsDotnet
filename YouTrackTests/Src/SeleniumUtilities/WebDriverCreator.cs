@@ -5,18 +5,18 @@ using OpenQA.Selenium.Firefox;
 namespace YouTrackWebdriverTests.SeleniumUtilities
 {
 
-    public class WebDriverInstantiator
+    public class WebDriverCreator
     {
-        private readonly BrowserType myBrowserType;
+        private readonly BrowserType _browserType;
 
-        public WebDriverInstantiator(BrowserType browserType)
+        public WebDriverCreator(BrowserType browserType)
         {
-            myBrowserType = browserType;
+            _browserType = browserType;
         }
 
         public IWebDriver CreateWebDriver()
         {
-            return myBrowserType switch
+            return _browserType switch
             {
                 BrowserType.Firefox => CreateFirefoxDriver(),
                 BrowserType.Chrome => CreateChromeDriver(),
